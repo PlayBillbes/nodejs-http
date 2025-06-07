@@ -1,151 +1,34 @@
 import streamlit as st
-import subprocess # Import the subprocess module to run shell commands
-import shlex # Import shlex to safely split command strings
-import os # Import the os module for os.system
+import os
 
-# Set the title of the Streamlit application
-st.set_page_config(page_title="Hello Streamlit App")
+def app():
+    st.title("Folder Content Uploader (Multiple Files)")
+    st.write("This app allows you to upload multiple files from a folder.")
+    st.write("Due to browser security limitations, you cannot directly upload an entire folder. "
+             "Instead, please select all the files you wish to upload from your chosen folder.")
 
-# Display a simple header
-st.title("Hello, Streamlit!")
+    uploaded_files = st.file_uploader("Choose files from your folder", accept_multiple_files=True)
 
-# Display a simple text message
-st.write("This is your first Streamlit application.")
+    if uploaded_files:
+        st.subheader("Uploaded Files:")
+        for uploaded_file in uploaded_files:
+            st.write(f"- {uploaded_file.name} (Type: {uploaded_file.type}, Size: {uploaded_file.size} bytes)")
 
-# You can also add more elements like buttons, sliders, etc.
-# For example, let's add a button
-if st.button("Say Hello"):
-    st.success("Hello there!")
+            # Option to save the files (example: saving to a 'temp_uploads' directory)
+            # You would need to create this directory in your app's root or desired location
+            save_path = "temp_uploads"
+            os.makedirs(save_path, exist_ok=True) # Create directory if it doesn't exist
 
-# Or a text input
-user_name = st.text_input("What's your name?", "World")
-st.write(f"Hello, {user_name}!")
+            try:
+                with open(os.path.join(save_path, uploaded_file.name), "wb") as f:
+                    f.write(uploaded_file.getbuffer())
+                st.success(f"Saved '{uploaded_file.name}' to '{save_path}'")
+            except Exception as e:
+                st.error(f"Error saving '{uploaded_file.name}': {e}")
 
-
-
-### Command Execution Example (Pre-defined `ls`)
-
-# Add a button to execute the 'ls' command
-if st.button("Execute `ls -l`"):
-    st.write("Executing `ls -l`...")
-    try:
-        # Run the 'ls -l' command
-        # capture_output=True captures stdout and stderr
-        # text=True decodes output as text
-        result = subprocess.run(['ls', '-l'], capture_output=True, text=True, check=True)
-
-        # Display the standard output
-        st.code(result.stdout, language='bash')
-
-        # If there's any standard error, display it as a warning
-        if result.stderr:
-            st.warning("Errors/Warnings from command:")
-            st.code(result.stderr, language='bash')
-
-    except subprocess.CalledProcessError as e:
-        # Handle cases where the command returns a non-zero exit code (an error)
-        st.error(f"Command failed with exit code {e.returncode}:")
-        st.code(e.stderr, language='bash')
-    except FileNotFoundError:
-        # Handle case if 'ls' command is not found (unlikely on most systems)
-        st.error("Error: 'ls' command not found. Make sure it's in your system's PATH.")
-    except Exception as e:
-        # Catch any other unexpected errors
-        st.error(f"An unexpected error occurred: {e}")
-
-
-### Interactive Terminal Box
-
-st.subheader("Execute Custom System Commands")
-command_input = st.text_input("Enter command:", "echo Hello from Streamlit!")
-
-if st.button("Execute Command"):
-    if command_input:
-        st.write(f"Executing: `{command_input}`...")
-        try:
-            # Use shlex.split to safely split the command string into a list of arguments.
-            # This handles commands with spaces, quotes, etc., correctly.
-            # Note: subprocess.run is generally preferred over os.system for more control
-            # and security when executing arbitrary commands.
-            command_parts = shlex.split(command_input)
-
-            # Execute the command using subprocess.run to capture output
-            result = subprocess.run(command_parts, capture_output=True, text=True, check=True, shell=False)
-
-            st.success("Command Output:")
-            st.code(result.stdout, language='bash')
-
-            if result.stderr:
-                st.warning("Errors/Warnings (stderr):")
-                st.code(result.stderr, language='bash')
-
-        except subprocess.CalledProcessError as e:
-            st.error(f"Command failed with exit code {e.returncode}:")
-            st.code(e.stderr, language='bash')
-        except FileNotFoundError:
-            st.error(f"Error: Command or part of command '{command_parts[0]}' not found.")
-        except ValueError as e: # Changed from shlex.SplitError to ValueError
-            st.error(f"Error parsing command: {e}. Please check command syntax.")
-        except Exception as e:
-            st.error(f"An unexpected error occurred: {e}")
+        st.success(f"Successfully uploaded {len(uploaded_files)} file(s).")
     else:
-        st.warning("Please enter a command to execute.")
+        st.info("Please upload files to see the details.")
 
-
-
-### Check System Architecture
-
-st.subheader("System Information")
-
-if st.button("Check System Architecture"):
-    st.write("Checking system architecture...")
-    try:
-        # Use 'uname -m' to get the machine hardware name (architecture)
-        result = subprocess.run(['uname', '-m'], capture_output=True, text=True, check=True)
-        architecture = result.stdout.strip() # Remove leading/trailing whitespace
-
-        st.info(f"Your system architecture is: **`{architecture}`**")
-
-        # You can add more specific checks here if needed
-        if 'arm' in architecture.lower():
-            st.write("This typically indicates an ARM-based processor (e.g., Apple Silicon, Raspberry Pi).")
-        elif 'x86_64' in architecture.lower() or 'amd64' in architecture.lower():
-            st.write("This typically indicates an x86-64 based processor (e.g., Intel or AMD).")
-        else:
-            st.write("This is a different or unknown architecture.")
-
-    except subprocess.CalledProcessError as e:
-        st.error(f"Failed to check architecture. Command failed with exit code {e.returncode}:")
-        st.code(e.stderr, language='bash')
-    except FileNotFoundError:
-        st.error("Error: 'uname' command not found. This command is usually available on Unix-like systems.")
-    except Exception as e:
-        st.error(f"An unexpected error occurred while checking architecture: {e}")
-
-
-### Execute Specific Tunnel Command with `os.system` (Caution!)
-
-st.subheader("Run Tunnel Command with `os.system`")
-st.warning("""
-    **Caution:** Executing this command with `os.system` will **block your Streamlit app** until the command (the tunnel) is terminated.
-    You will also **not see any output** from the command in the Streamlit app.
-    It's generally recommended to use `subprocess.Popen` for long-running background processes to keep your Streamlit app responsive.
-""")
-
-tunnel_command = "./server tunnel --edge-ip-version auto --no-autoupdate --protocol http2 run --token eyJhIjoiZmM5YWQ3MmI4ZTYyZGZkMzMxZTk1MjY3MjA1YjhmZGUiLCJ0IjoiYzUxZDQ3MjMtZDM3OC00NjMwLTkxYmUtYTI0MzNmODIyYjM5IiwicyI6Ik9EazFaRE14WkRRdE4yVmlaQzAwTXpNeExXSmlOV0l0WkRZd1pETTVNMlk1WVRrNCJ9"
-st.code(tunnel_command, language='bash')
-
-
-if st.button("Execute Tunnel Command (os.system)"):
-    st.write("Attempting to execute tunnel command with `os.system`...")
-    try:
-        # Execute the command. This will block until the command finishes.
-        # Output will go to the console where Streamlit is running, not here.
-        exit_code = os.system(tunnel_command)
-        st.info(f"Command finished with exit code: {exit_code}")
-        if exit_code != 0:
-            st.error("The command might have failed. Check your terminal for details.")
-    except Exception as e:
-        st.error(f"An error occurred while trying to run the command: {e}")
-    st.warning("If the tunnel started, this Streamlit app is now blocked until the tunnel process is manually stopped.")
-
+if __name__ == "__main__":
+    app()
