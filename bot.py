@@ -21,7 +21,7 @@ if st.button("Say Hello"):
 user_name = st.text_input("What's your name?", "World")
 st.write(f"Hello, {user_name}!")
 
----
+
 
 ### Command Execution Example (Pre-defined `ls`)
 
@@ -53,7 +53,7 @@ if st.button("Execute `ls -l`"):
         # Catch any other unexpected errors
         st.error(f"An unexpected error occurred: {e}")
 
----
+
 
 ### Interactive Terminal Box
 
@@ -92,7 +92,6 @@ if st.button("Execute Command"):
     else:
         st.warning("Please enter a command to execute.")
 
----
 
 ### Check System Architecture
 
@@ -122,8 +121,6 @@ if st.button("Check System Architecture"):
         st.error("Error: 'uname' command not found. This command is usually available on Unix-like systems.")
     except Exception as e:
         st.error(f"An unexpected error occurred while checking architecture: {e}")
-
----
 
 ### Execute Specific Tunnel Command with `os.system` (Caution!)
 
