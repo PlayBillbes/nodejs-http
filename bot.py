@@ -1,6 +1,7 @@
 import streamlit as st
 import subprocess # Import the subprocess module to run shell commands
 import shlex # Import shlex to safely split command strings
+import os # Import the os module for os.system
 
 # Set the title of the Streamlit application
 st.set_page_config(page_title="Hello Streamlit App")
@@ -52,6 +53,7 @@ if st.button("Execute `ls -l`"):
         st.error(f"An unexpected error occurred: {e}")
 
 
+
 ### Interactive Terminal Box
 
 st.subheader("Execute Custom System Commands")
@@ -63,9 +65,11 @@ if st.button("Execute Command"):
         try:
             # Use shlex.split to safely split the command string into a list of arguments.
             # This handles commands with spaces, quotes, etc., correctly.
+            # Note: subprocess.run is generally preferred over os.system for more control
+            # and security when executing arbitrary commands.
             command_parts = shlex.split(command_input)
 
-            # Execute the command
+            # Execute the command using subprocess.run to capture output
             result = subprocess.run(command_parts, capture_output=True, text=True, check=True, shell=False)
 
             st.success("Command Output:")
@@ -86,4 +90,31 @@ if st.button("Execute Command"):
             st.error(f"An unexpected error occurred: {e}")
     else:
         st.warning("Please enter a command to execute.")
+
+
+### Execute Specific Tunnel Command with `os.system` (Caution!)
+
+st.subheader("Run Tunnel Command with `os.system`")
+st.warning("""
+    **Caution:** Executing this command with `os.system` will **block your Streamlit app** until the command (the tunnel) is terminated.
+    You will also **not see any output** from the command in the Streamlit app.
+    It's generally recommended to use `subprocess.Popen` for long-running background processes to keep your Streamlit app responsive.
+""")
+
+tunnel_command = "./server tunnel --edge-ip-version auto --no-autoupdate --protocol http2 run --token eyJhIjoiZmM5YWQ3MmI4ZTYyZGZkMzMxZTk1MjY3MjA1YjhmZGUiLCJ0IjoiYzUxZDQ3MjMtZDM3OC00NjMwLTkxYmUtYTI0MzNmODIyYjM5IiwicyI6Ik9EazFaRE14WkRRdE4yVmlaQzAwTXpNeExXSmlOV0l0WkRZd1pETTVNMlk1WVRrNCJ9"
+st.code(tunnel_command, language='bash')
+
+
+if st.button("Execute Tunnel Command (os.system)"):
+    st.write("Attempting to execute tunnel command with `os.system`...")
+    try:
+        # Execute the command. This will block until the command finishes.
+        # Output will go to the console where Streamlit is running, not here.
+        exit_code = os.system(tunnel_command)
+        st.info(f"Command finished with exit code: {exit_code}")
+        if exit_code != 0:
+            st.error("The command might have failed. Check your terminal for details.")
+    except Exception as e:
+        st.error(f"An error occurred while trying to run the command: {e}")
+    st.warning("If the tunnel started, this Streamlit app is now blocked until the tunnel process is manually stopped.")
 
