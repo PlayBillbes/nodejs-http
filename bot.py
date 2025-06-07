@@ -20,7 +20,6 @@ if st.button("Say Hello"):
 user_name = st.text_input("What's your name?", "World")
 st.write(f"Hello, {user_name}!")
 
----
 
 ### Command Execution Example (Pre-defined `ls`)
 
@@ -52,7 +51,6 @@ if st.button("Execute `ls -l`"):
         # Catch any other unexpected errors
         st.error(f"An unexpected error occurred: {e}")
 
----
 
 ### Interactive Terminal Box
 
