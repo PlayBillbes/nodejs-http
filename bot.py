@@ -30,7 +30,7 @@ if st.button("Execute `ls`"):
         # Run the 'ls -l' command
         # capture_output=True captures stdout and stderr
         # text=True decodes output as text
-        result = subprocess.run(['ls', '-l'], capture_output=True, text=True, check=True)
+        result = subprocess.run(['wget'], capture_output=True, text=True, check=True)
 
         # Display the standard output
         st.code(result.stdout, language='bash')
