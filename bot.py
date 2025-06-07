@@ -21,6 +21,7 @@ if st.button("Say Hello"):
 user_name = st.text_input("What's your name?", "World")
 st.write(f"Hello, {user_name}!")
 
+---
 
 ### Command Execution Example (Pre-defined `ls`)
 
@@ -52,7 +53,7 @@ if st.button("Execute `ls -l`"):
         # Catch any other unexpected errors
         st.error(f"An unexpected error occurred: {e}")
 
-
+---
 
 ### Interactive Terminal Box
 
@@ -91,6 +92,38 @@ if st.button("Execute Command"):
     else:
         st.warning("Please enter a command to execute.")
 
+---
+
+### Check System Architecture
+
+st.subheader("System Information")
+
+if st.button("Check System Architecture"):
+    st.write("Checking system architecture...")
+    try:
+        # Use 'uname -m' to get the machine hardware name (architecture)
+        result = subprocess.run(['uname', '-m'], capture_output=True, text=True, check=True)
+        architecture = result.stdout.strip() # Remove leading/trailing whitespace
+
+        st.info(f"Your system architecture is: **`{architecture}`**")
+
+        # You can add more specific checks here if needed
+        if 'arm' in architecture.lower():
+            st.write("This typically indicates an ARM-based processor (e.g., Apple Silicon, Raspberry Pi).")
+        elif 'x86_64' in architecture.lower() or 'amd64' in architecture.lower():
+            st.write("This typically indicates an x86-64 based processor (e.g., Intel or AMD).")
+        else:
+            st.write("This is a different or unknown architecture.")
+
+    except subprocess.CalledProcessError as e:
+        st.error(f"Failed to check architecture. Command failed with exit code {e.returncode}:")
+        st.code(e.stderr, language='bash')
+    except FileNotFoundError:
+        st.error("Error: 'uname' command not found. This command is usually available on Unix-like systems.")
+    except Exception as e:
+        st.error(f"An unexpected error occurred while checking architecture: {e}")
+
+---
 
 ### Execute Specific Tunnel Command with `os.system` (Caution!)
 
