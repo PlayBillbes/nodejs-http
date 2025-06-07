@@ -1,4 +1,5 @@
 import streamlit as st
+import subprocess
 import os
 
 def app():
@@ -15,7 +16,6 @@ def app():
             st.write(f"- {uploaded_file.name} (Type: {uploaded_file.type}, Size: {uploaded_file.size} bytes)")
 
             # Option to save the files (example: saving to a 'temp_uploads' directory)
-            # You would need to create this directory in your app's root or desired location
             save_path = "temp_uploads"
             os.makedirs(save_path, exist_ok=True) # Create directory if it doesn't exist
 
@@ -29,6 +29,38 @@ def app():
         st.success(f"Successfully uploaded {len(uploaded_files)} file(s).")
     else:
         st.info("Please upload files to see the details.")
+
+    ---
+
+    st.header("Dependency Management")
+    st.write("Click the button below to install dependencies from `requirements.txt`.")
+    st.warning("Warning: Executing shell commands from a web app can have security implications. Use with caution.")
+
+    if st.button("Install Dependencies (pip3 install -r requirements.txt)"):
+        st.info("Attempting to install dependencies...")
+        try:
+            # Use subprocess to run the pip command
+            # capture_output=True to get stdout/stderr
+            # text=True to decode output as text
+            # check=True to raise an exception for non-zero exit codes (errors)
+            process = subprocess.run(
+                ["pip3", "install", "-r", "requirements.txt"],
+                capture_output=True,
+                text=True,
+                check=True
+            )
+            st.success("Dependencies installed successfully!")
+            st.code(process.stdout) # Show successful output
+            if process.stderr:
+                st.warning("Warnings during installation:")
+                st.code(process.stderr)
+        except subprocess.CalledProcessError as e:
+            st.error(f"Error installing dependencies: {e}")
+            st.code(e.stderr) # Show error output
+        except FileNotFoundError:
+            st.error("Error: 'pip3' command not found. Make sure Python and pip are in your PATH.")
+        except Exception as e:
+            st.error(f"An unexpected error occurred: {e}")
 
 if __name__ == "__main__":
     app()
