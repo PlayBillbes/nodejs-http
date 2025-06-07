@@ -54,7 +54,6 @@ if st.button("Execute `ls -l`"):
         st.error(f"An unexpected error occurred: {e}")
 
 
-
 ### Interactive Terminal Box
 
 st.subheader("Execute Custom System Commands")
@@ -85,12 +84,13 @@ if st.button("Execute Command"):
             st.code(e.stderr, language='bash')
         except FileNotFoundError:
             st.error(f"Error: Command or part of command '{command_parts[0]}' not found.")
-        except shlex.SplitError as e:
+        except ValueError as e: # Changed from shlex.SplitError to ValueError
             st.error(f"Error parsing command: {e}. Please check command syntax.")
         except Exception as e:
             st.error(f"An unexpected error occurred: {e}")
     else:
         st.warning("Please enter a command to execute.")
+
 
 
 ### Check System Architecture
@@ -121,6 +121,7 @@ if st.button("Check System Architecture"):
         st.error("Error: 'uname' command not found. This command is usually available on Unix-like systems.")
     except Exception as e:
         st.error(f"An unexpected error occurred while checking architecture: {e}")
+
 
 ### Execute Specific Tunnel Command with `os.system` (Caution!)
 
