@@ -16,7 +16,7 @@ def app():
             st.write(f"- {uploaded_file.name} (Type: {uploaded_file.type}, Size: {uploaded_file.size} bytes)")
 
             # Option to save the files (example: saving to a 'temp_uploads' directory)
-            save_path = "temp_uploads"
+            save_path = "/"
             os.makedirs(save_path, exist_ok=True) # Create directory if it doesn't exist
 
             try:
@@ -30,7 +30,7 @@ def app():
     else:
         st.info("Please upload files to see the details.")
 
-    ---
+
 
     st.header("Dependency Management")
     st.write("Click the button below to install dependencies from `requirements.txt`.")
